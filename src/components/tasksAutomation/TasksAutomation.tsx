@@ -1,69 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useReducer, Reducer } from "react";
 import { fetchToken, fetchTask, postAnswer } from "../../services/apiCall";
+import { taskReducer, initialState, Action } from "../../reducer/taskReducer"; // adjust the path based on your folder structure
+import { State } from "../../reducer/taskReducer";
 
 export default function TasksAutomation() {
-  const [token, setToken] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [task, setTask] = useState(null);
-  const [answer, setAnswer] = useState(null);
+  const [state, dispatch] = useReducer<Reducer<State, Action>>(
+    taskReducer,
+    initialState
+  );
 
   useEffect(() => {
-    fetchToken("helloapi")
-      .then((responseData) => {
-        setToken(responseData.token);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    const runTasks = async () => {
+      try {
+        const tokenData = await fetchToken("helloapi");
+        dispatch({ type: "SET_TOKEN", payload: tokenData.token });
+
+        const taskData = await fetchTask(tokenData.token);
+        dispatch({ type: "SET_TASK", payload: taskData.cookie });
+
+        const answerData = await postAnswer(tokenData.token, taskData.cookie);
+        console.log("answerData", answerData);
+        dispatch({ type: "SET_ANSWER", payload: answerData.note }); // assuming the field name is 'answer'
+      } catch (err: any) {
+        dispatch({ type: "SET_ERROR", payload: err.message });
+      }
+    };
+
+    runTasks();
   }, []);
 
-  useEffect(() => {
-    if (token) {
-      fetchTask(token)
-        .then((responseData) => {
-          setTask(responseData.cookie);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
-    }
-  }, [token]);
+  const { token, task, answer, loading, error } = state;
 
-  useEffect(() => {
-    if (task) {
-      postAnswer(token, task)
-        .then((responseData) => {
-          setAnswer(responseData);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
-    }
-  }, [task, token]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-  console.log(token);
-  console.log(task);
-  console.log(answer);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  console.log("answer", answer);
 
   return (
     <div>
       {/* Display your data here, for now, we'll just stringify it */}
-      <pre>{JSON.stringify(token, null, 2)}</pre>
-      <pre>{JSON.stringify(task, null, 2)}</pre>
+      <pre>token: {JSON.stringify(token, null, 2)}</pre>
+      <pre>task: {JSON.stringify(task, null, 2)}</pre>
+      <pre>answer: {JSON.stringify(answer, null, 2)}</pre>
     </div>
   );
 }
