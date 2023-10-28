@@ -21,7 +21,7 @@ export const initialState: State = {
   error: null,
 };
 
-export function taskReducer(state: State, action: Action): State {
+export function openAIReducer(state: State, action: Action): State {
   switch (action.type) {
     case "SET_TOKEN":
       return { ...state, token: action.payload };

@@ -34,3 +34,35 @@ export const postAnswer = async (token: string, answer: string) => {
     body: JSON.stringify({ answer: answer }),
   });
 };
+
+export const fetchOpenAI = async () => {
+  const OPENAI_API_KEY = process.env.REACT_APP_OPENAI_API_KEY;
+  const endpoint = "https://api.openai.com/v1/chat/completions";
+  const headers = {
+    Authorization: `Bearer ${OPENAI_API_KEY}`,
+    "Content-Type": "application/json",
+  };
+  const body = {
+    messages: [{ role: "user", content: "Hello!" }],
+    model: "gpt-3.5-turbo",
+  };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    console.log("data", data);
+    return data;
+  } catch (error: unknown) {
+    const e = error as Error;
+    console.error("There was a problem with the fetch operation:", e.message);
+  }
+};
