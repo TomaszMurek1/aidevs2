@@ -1,4 +1,5 @@
 import React from "react";
+import { ModerationResponse } from "../../types/types";
 
 const fetchModerations = async (inputText: string) => {
   const response = await fetch("https://api.openai.com/v1/moderations", {
@@ -18,7 +19,7 @@ const fetchModerations = async (inputText: string) => {
   return data;
 };
 
-const processTextArray = async (textArray: string[]) => {
+const processModerations = async (textArray: string[]) => {
   try {
     console.log("textArray", textArray);
     const results = await Promise.all(textArray.map(fetchModerations)).then(
@@ -36,7 +37,9 @@ export const processTask = async (task: any) => {
 
   // Example: Run processTextArray and return the result
   try {
-    const moderationResults = await processTextArray(task.input);
+    const moderationResults: ModerationResponse[] = await processModerations(
+      task.input
+    );
     console.log("moderationResult", moderationResults);
     const finalResult = moderationResults.map((result) =>
       result.results[0].flagged ? 1 : 0
