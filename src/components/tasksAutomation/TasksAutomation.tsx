@@ -1,6 +1,12 @@
-import React, { useEffect, useReducer, Reducer } from "react";
-import { fetchToken, fetchTask, postAnswer } from "../../services/apiCall";
-import { taskReducer, initialState, Action } from "../../reducer/taskReducer"; // adjust the path based on your folder structure
+import React, { useReducer, Reducer } from "react";
+import { Button } from "@mui/material";
+import {
+  fetchToken,
+  fetchTask,
+  postAnswer,
+  postAnswerAndProcess,
+} from "../../services/apiCall";
+import { taskReducer, initialState, Action } from "../../reducer/taskReducer";
 import { State } from "../../reducer/taskReducer";
 
 export default function TasksAutomation() {
@@ -9,25 +15,26 @@ export default function TasksAutomation() {
     initialState
   );
 
-  useEffect(() => {
-    const runTasks = async () => {
-      try {
-        const tokenData = await fetchToken("helloapi");
-        dispatch({ type: "SET_TOKEN", payload: tokenData.token });
+  const taskName = "moderation";
 
-        const taskData = await fetchTask(tokenData.token);
-        dispatch({ type: "SET_TASK", payload: taskData.cookie });
+  const runTasks = async () => {
+    try {
+      const tokenData = await fetchToken(taskName);
+      dispatch({ type: "SET_TOKEN", payload: tokenData.token });
 
-        const answerData = await postAnswer(tokenData.token, taskData.cookie);
-        console.log("answerData", answerData);
-        dispatch({ type: "SET_ANSWER", payload: answerData.note }); // assuming the field name is 'answer'
-      } catch (err: any) {
-        dispatch({ type: "SET_ERROR", payload: err.message });
-      }
-    };
+      const taskData = await fetchTask(tokenData.token);
+      dispatch({ type: "SET_TASK", payload: taskData.msg });
 
-    runTasks();
-  }, []);
+      const answerData = await postAnswerAndProcess(
+        tokenData.token,
+        taskName,
+        taskData
+      );
+      dispatch({ type: "SET_ANSWER", payload: answerData.note });
+    } catch (err: any) {
+      dispatch({ type: "SET_ERROR", payload: err.message });
+    }
+  };
 
   const { token, task, answer, loading, error } = state;
 
@@ -37,10 +44,13 @@ export default function TasksAutomation() {
 
   return (
     <div>
-      {/* Display your data here, for now, we'll just stringify it */}
+      {/* Display your data here */}
       <pre>token: {JSON.stringify(token, null, 2)}</pre>
       <pre>task: {JSON.stringify(task, null, 2)}</pre>
       <pre>answer: {JSON.stringify(answer, null, 2)}</pre>
+      <Button variant="contained" color="primary" onClick={runTasks}>
+        Run Tasks
+      </Button>
     </div>
   );
 }

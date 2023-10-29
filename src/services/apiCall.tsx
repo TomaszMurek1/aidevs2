@@ -24,8 +24,31 @@ export const fetchToken = async (taskName: string) => {
 export const fetchTask = async (token: string) => {
   return fetchAPI(`${BASE_URL}/task/${token}`);
 };
+export const postAnswerAndProcess = async (
+  token: string,
+  taskName: string,
+  taskData: any
+) => {
+  let processedAnswer;
 
-export const postAnswer = async (token: string, answer: string) => {
+  console.log("taskName", taskName);
+  try {
+    // This dynamically imports the corresponding module
+    console.log(taskName);
+    const module = await import(`../components/exercises/${taskName}`);
+    console.log(module);
+
+    // Use the processTask function from the dynamically imported module
+    processedAnswer = await module.processTask(taskData);
+  } catch (err) {
+    console.log(err);
+    throw new Error(`$err`);
+  }
+
+  return postAnswer(token, processedAnswer);
+};
+
+export const postAnswer = async (token: string, answer: number[]) => {
   return fetchAPI(`${BASE_URL}/answer/${token}`, {
     method: "POST",
     headers: {

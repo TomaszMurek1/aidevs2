@@ -27,14 +27,12 @@ function App() {
               <ChatComponent />
             </Paper>
           </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} style={{ padding: "16px" }}>
+              <TasksAutomation />
+            </Paper>
+          </Grid>
         </Grid>
-
-        {/* Second section */}
-        {/* <Grid item xs={12} md={4}>
-          <Paper elevation={3} style={{ padding: "16px" }}>
-            <WaveComponent />
-          </Paper>
-        </Grid> */}
       </Container>
     </ThemeProvider>
   );
